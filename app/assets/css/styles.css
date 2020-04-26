@@ -1,0 +1,15 @@
+:root {
+  --bg-color: #1b262c;
+  --accent-color: #0f4c75;
+  --accent-color-dark: #0b3551;
+}
+
+html {
+  height: 100vh;
+}
+
+body {
+  background-color: var(--bg-color);
+  min-height: 100vh;
+}
+

@@ -1,0 +1,15 @@
+{
+  "name": "electron-bluetooth-lamp-controller",
+  "version": "1.0.0",
+  "description": "Control a Bluetooth LED lamp over an Electron application",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": "https://github.com/DeveloperBlue/Electron-Bluetooth-Lamp-Controller",
+  "keywords": [],
+  "author": "Michael Rooplall",
+  "devDependencies": {
+    "electron": "^8.2.3"
+  }
+}
