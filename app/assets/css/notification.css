@@ -1,0 +1,18 @@
+.notification {
+  position: absolute;
+  width: 100%;
+  top: 40%;
+  padding: 20px;
+  background-color: rgba(0,0,0,.8);
+  color: #fff;
+  font-weight: bold;
+  text-align: center;
+  box-shadow: 5px 5px 10px 5px rgba(0,0,0,0.4);
+}
+
+.notification > span {
+  display: block;
+  max-width: 420px;
+  margin: 0 auto;
+}
+

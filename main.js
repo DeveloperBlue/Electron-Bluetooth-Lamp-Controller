@@ -6,11 +6,10 @@ const BrowserWindow = electron.BrowserWindow
 
 const ipcMain = electron.ipcMain;
 
-
-
 app.commandLine.appendSwitch("enable-web-bluetooth", true);
 app.commandLine.appendSwitch('enable-experimental-web-platform-features', true);
 
+const fs = require("fs");
 const path = require("path")
 const url = require("url")
 
@@ -31,7 +30,10 @@ function createWindow() {
 	})
 
 	// required for Dev tools
-	devToolsWindow = new BrowserWindow()
+	devToolsWindow = new BrowserWindow({
+		x : 10,
+		y: 10
+	})
 
 	mainWindow.webContents.setDevToolsWebContents(devToolsWindow.webContents)
 	mainWindow.webContents.openDevTools({ mode: 'detach' })
@@ -89,117 +91,190 @@ app.on("ready", function(){
 
 	let bluetooth_mode = "discovery";
 
-	// Discovery Settings
-	let discovery_timeout;
-	let discovery_callback;
-	let discovery_device_list;
+	// Universal Settings
+	let bluetooth_state_manager = {
+		mode : "none",
+		timeout : null,
+		callback : null,
+		setCallback : function(callback_fn){
+			bluetooth_state_manager.callback = function(args){
 
-	// Pairing Settings
-	let pairing_device_id;
-	let pairing_callback;
-	let pairing_timeout;
+				bluetooth_state_manager.mode = "none";
+				bluetooth_state_manager.callback = null;
 
-	function sendBluetoothDiscovery(isFinal){
-		mainWindow.webContents.send("bluetooth-discovery-response", {
-			devices : discovery_device_list,
-			isFinal : isFinal
-		});
+				if (bluetooth_state_manager.timeout){
+					clearTimeout(bluetooth_state_manager.timeout);
+				}
+
+				callback_fn(args);
+			}
+		}
 	}
 
-	ipcMain.on("bluetooth-pair", (event, args) => {
+	let bluetooth_discovery_device_list;
+	let bluetooth_pairing_device_id;
 
-		console.log("Set bluetooth listener to pairing mode");
-		bluetooth_mode = "pairing";
-		pairing_device_id = args;
-		event.returnValue = 200;
+	//
 
-		let timeout = setTimeout(function(){
-			if (bluetooth_mode == "pairing" && pairing_timeout == timeout){
-				console.log("Bluetooth pairing timed out");
-				bluetooth_mode = "none";
-				if (pairing_callback){
-					pairing_callback("");
-				}
-				clearTimeout(pairing_timeout);
-			}
-		}, 30*1000);
+	function updateClientBluetoothDiscovery(isFinal){
+		mainWindow.webContents.send("bluetooth-discovery-response", {
+			devices : bluetooth_discovery_device_list,
+			isFinal : isFinal
+		})
+	}
 
-	})
+	//
 
-	ipcMain.on("bluetooth-discovery", (event, arg) => {
+	ipcMain.on("bluetooth-state", (event, args) => {
+		// args.mode = "discovery" or "pairing"
 
-		console.log("Set bluetooth listener to discovery mode");
-		bluetooth_mode = "discovery";
-		discovery_device_list = [];
-		event.returnValue = 200;
-
-		let timeout = setTimeout(function(){
-			if (bluetooth_mode == "discovery" && discovery_timeout == timeout){
-				console.log("Bluetooth discovery timed out");
-				bluetooth_mode = "none";
-				if (discovery_callback){
-					discovery_callback("");
-				}
-				sendBluetoothDiscovery(true);
-				clearTimeout(discovery_timeout);
-			}
-		}, 30*1000);
-
-		discovery_timeout = timeout;
-	})
-
-	ipcMain.on("bluetooth-discovery-stop", (event, arg) => {
-		console.log("Bluetooth discovery stopped");
-		bluetooth_mode = "none";
-		console.log(typeof discovery_callback);
-		if (discovery_callback){
-			discovery_callback("");
+		if (args.mode !== "discovery" && args.mode !== "pairing"){
+			throw new Error(`Attempted to set bluetooth state manager to invalid state : ${args.mode}`);
 		}
-		sendBluetoothDiscovery(true);
-		clearTimeout(discovery_timeout);
+
+		if (args.mode == "discovery" && args.stop == true){
+			// discovery-stop
+
+			console.log("Bluetooth Discovery Stopped");
+
+			if (bluetooth_state_manager.callback){
+				bluetooth_state_manager.callback("");
+			}
+
+			updateClientBluetoothDiscovery(true);
+			
+			event.returnValue = 200;
+			return;
+		}
+
+		bluetooth_state_manager.mode = args.mode;
+
+		if (args.mode == "discovery") {
+			bluetooth_discovery_device_list = [];
+		} else {
+			bluetooth_pairing_device_id = args.deviceId;
+		}
+
+		let origin_mode = args.mode + "";
+
+		let timeout = setTimeout(function(){
+			if (bluetooth_state_manager.mode == origin_mode && bluetooth_state_manager.timeout == timeout){
+
+				console.log((origin_mode == "discovery") ? "Bluetooth Discovery timed out" : "Bluetooth Pairing timed out");
+
+				if (bluetooth_state_manager.callback){
+					bluetooth_state_manager.callback("");
+				}
+
+				if (origin_mode == "discovery"){
+					updateClientBluetoothDiscovery(true);
+				}
+
+			}
+		}, 30 * 1000);
+
+		bluetooth_state_manager.timeout = timeout;
+
+		event.returnValue = 200;
+
 	})
 
-	mainWindow.webContents.on("select-bluetooth-device", (event, deviceList, callback) => {
+
+	mainWindow.webContents.on("select-bluetooth-device", (event, devices_list, callback) => {
 
 		event.preventDefault();
 
-		console.log("Bluetooth Listener triggered")
+		console.log(`Bluetooth Scanner Triggered | Mode: ${bluetooth_state_manager.mode}`);
 
-		console.log(deviceList);
+		bluetooth_state_manager.setCallback(callback);
 
-		if (bluetooth_mode == "discovery"){
+		if (bluetooth_state_manager.mode == "discovery"){
 
-			console.log("Discovery Mode");
+			console.log(`(${devices_list.length}) devices found. [${devices_list.length - bluetooth_discovery_device_list.length} new]`)
 
-			discovery_device_list = deviceList;
-			discovery_callback = callback;
+			bluetooth_discovery_device_list = devices_list;
 
-			sendBluetoothDiscovery();
+			updateClientBluetoothDiscovery();
 
-			// return;
+		} else if (bluetooth_state_manager.mode == "pairing"){
 
-		} else if (bluetooth_mode == "pairing") {
-
-			console.log("Pairing Mode");
-
-			pairing_callback = callback;
-
-			let result_device = deviceList.find((device) => {
-				return device.deviceId == pairing_device_id;
+			let result_device = devices_list.find((device) => {
+				return device.deviceId == bluetooth_pairing_device_id;
 			})
 
-			if (result_device) {
-				console.log("Found Device");
-				console.log(result_device);
-				callback(result_device.deviceId);
+			if (result_device && bluetooth_state_manager.callback){
+				bluetooth_state_manager.callback(result_device.deviceId);
 			}
 
 		} else {
-			console.log("No Mode", bluetooth_mode);
-			callback("");
+			throw new Error("Bluetooth State Manager - No Mode Set");
+			if (bluetooth_state_manager.callback){
+				bluetooth_state_manager.callback("");
+			}
 		}
+	})
+
+	//
+
+	let scanner_data = {
+
+		/*
+		"DEVICE_ID" : {
+			"SERVICE_ID" : [
+				{
+					// Scan data
+					"CHARACTERISTIC" : "VALUE"
+				}
+			]
+		},
+		*/
+	}
+
+	ipcMain.on("data-recorder", (event, args) => {
+
+		if (typeof scanner_data[args.deviceId] == "undefined") {
+			scanner_data[args.deviceId] = {};
+		}
+
+		if (typeof scanner_data[args.deviceId][args.serviceUUID] == "undefined") {
+			scanner_data[args.deviceId][args.serviceUUID]  = [];
+		}
+
+		scanner_data[args.deviceId][args.serviceUUID].push({
+			time : args.time,
+			data : args.data
+		});
+
+		console.log("Recorded Bluetooth Device Service Characteristics");
+	})
+
+	function prettyPrintArray(json) {
+		if (typeof json === 'string') {
+			json = JSON.parse(json);
+		}
+		output = JSON.stringify(json, function(k,v) {
+			if(v instanceof Array && typeof v[0] == "number")
+				return JSON.stringify(v);
+			return v;
+		}, 2).replace(/\\/g, '')
+					.replace(/\"\[/g, '[')
+					.replace(/\]\"/g,']')
+					.replace(/\"\{/g, '{')
+					.replace(/\}\"/g,'}');
+
+		return output;
+	}
+
+	ipcMain.on("export-data", (event, args) => {
+		console.log("Exporting recorded data . . .", scanner_data);
+		// fs.writeFileSync(path.join(__dirname, "/data_record.json"), JSON.stringify(scanner_data, null, "\t"), {flags: "w"});
+
+		fs.writeFileSync(path.join(__dirname, "/data_record.json"), prettyPrintArray(scanner_data), {flags: "w"});
 
 		
 	})
 
+
+
 })
+

@@ -7,12 +7,17 @@
     <title>Bluetooth-LED-Controller</title>
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
+    <link rel="stylesheet" href="assets/css/device-handler-page.css">
     <link rel="stylesheet" href="assets/css/device-scan-page.css">
+    <link rel="stylesheet" href="assets/css/notification.css">
     <link rel="stylesheet" href="assets/css/scrollbar.css">
     <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 
 <body>
+    <!-- Start: Notification -->
+    <div class="notification" style="display: none;"><span>Notification Text</span></div>
+    <!-- End: Notification -->
     <!-- Start: Device Scan Page -->
     <div class="device-scan">
         <!-- Start: Header -->
@@ -34,9 +39,18 @@
         <!-- End: Footer -->
     </div>
     <!-- End: Device Scan Page -->
+    <!-- Start: Device Handler Page -->
+    <div class="device-handler" style="/*display: none;*/">
+        <div class="container text-white">
+            <h4>Bluetooth Device Handler</h4><span class="device_name">Device Name :</span><span class="device_id">Device ID:</span><a class="record_data" href="#">Record Data</a><a class="export_data" href="#">Export Data</a><a class="re-pair_device" href="#">Re-pair to Device</a>
+            <div
+                class="characteristic-panel"><input type="text" class="characteristic_uuid" placeholder="UUID"><a class="characteristic_value_get" href="#">Get</a><input type="text" class="characteristic_value"><a class="characteristic_value_set" href="#">Set</a></div><a class="return_scanner"
+            href="#">Return to Scanner</a><a class="device_disconnect" href="#">Disconnect</a></div>
+    </div>
+    <!-- End: Device Handler Page -->
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/bootstrap/js/bootstrap.min.js"></script>
-    <script src="assets/js/index.js"></script>
+    <script src="C:/_PROJECTS/Electron-Bluetooth-Lamp-Controller/app/assets/js/index.js"></script>
 </body>
 
 </html>
