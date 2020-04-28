@@ -7,6 +7,7 @@
     <title>Bluetooth-LED-Controller</title>
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
+    <link rel="stylesheet" href="assets/css/color-wheel.css">
     <link rel="stylesheet" href="assets/css/device-handler-page.css">
     <link rel="stylesheet" href="assets/css/device-scan-page.css">
     <link rel="stylesheet" href="assets/css/notification.css">
@@ -19,7 +20,7 @@
     <div class="notification" style="display: none;"><span>Notification Text</span></div>
     <!-- End: Notification -->
     <!-- Start: Device Scan Page -->
-    <div class="device-scan">
+    <div class="device-scan" style="/*display: none;*/">
         <!-- Start: Header -->
         <div class="header"><i class="fab fa-bluetooth-b"></i>
             <h3 class="text-center text-white">Bluetooth Devices&nbsp;</h3><a href="#"><i class="fab fa-github"></i></a></div>
@@ -28,24 +29,29 @@
         <div class="content">
             <!-- Start: Device List -->
             <div class="bluetooth-list">
-                <div class="bluetooth-item template"><span class="name">Name :</span><span class="address">Address :</span><a href="#">Connect</a></div>
-                <div class="bluetooth-item"><span class="name">Name :</span><span class="address">Address :</span><a href="#">Connect</a></div>
+                <div class="bluetooth-item template"><span class="name">Name :</span><span class="address">Address :</span><button class="btn btn-primary" type="button">Connect</button></div>
             </div>
             <!-- End: Device List -->
         </div>
         <!-- End: Content -->
         <!-- Start: Footer -->
-        <div class="footer"><a class="scan-btn" href="#">Scan</a></div>
+        <div class="footer"><button class="btn btn-primary scan-btn" type="button">Scan</button></div>
         <!-- End: Footer -->
     </div>
     <!-- End: Device Scan Page -->
     <!-- Start: Device Handler Page -->
     <div class="device-handler" style="/*display: none;*/">
         <div class="container text-white">
-            <h4>Bluetooth Device Handler</h4><span class="device_name">Device Name :</span><span class="device_id">Device ID:</span><a class="record_data" href="#">Record Data</a><a class="export_data" href="#">Export Data</a><a class="re-pair_device" href="#">Re-pair to Device</a>
-            <div
-                class="characteristic-panel"><input type="text" class="characteristic_uuid" placeholder="UUID"><a class="characteristic_value_get" href="#">Get</a><input type="text" class="characteristic_value"><a class="characteristic_value_set" href="#">Set</a></div><a class="return_scanner"
-            href="#">Return to Scanner</a><a class="device_disconnect" href="#">Disconnect</a></div>
+            <div class="color-controller">
+                <div class="color-wheel"></div><span>Text</span></div>
+            <!-- Start: Debug -->
+            <div class="debug-div">
+                <h4>Bluetooth Device Handler</h4><span class="device_name">Device Name :</span><span class="device_id">Device ID:</span><a class="record_data" href="#">Record Data</a><a class="export_data" href="#">Export Data</a><a class="re-pair_device"
+                    href="#">Re-pair to Device</a>
+                <div class="characteristic-panel"><input type="text" class="characteristic_uuid" placeholder="UUID"><a class="characteristic_value_get" href="#">Get</a><input type="text" class="characteristic_value"><a class="characteristic_value_set" href="#">Set</a></div><a class="return_scanner"
+                    href="#">Return to Scanner</a><a class="device_disconnect" href="#">Disconnect</a></div>
+            <!-- End: Debug -->
+        </div>
     </div>
     <!-- End: Device Handler Page -->
     <script src="assets/js/jquery.min.js"></script>

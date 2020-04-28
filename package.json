@@ -11,5 +11,8 @@
   "author": "Michael Rooplall",
   "devDependencies": {
     "electron": "^8.2.3"
+  },
+  "dependencies": {
+    "@jaames/iro": "^5.1.7"
   }
 }

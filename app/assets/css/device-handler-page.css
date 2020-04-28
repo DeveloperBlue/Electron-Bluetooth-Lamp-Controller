@@ -2,7 +2,7 @@
   margin-top: 20px;
 }
 
-.device-handler > div > a, .device-handler > div > span {
+.debug-div > a, .debug-div > span {
   display: block;
   margin-bottom: 10px;
 }

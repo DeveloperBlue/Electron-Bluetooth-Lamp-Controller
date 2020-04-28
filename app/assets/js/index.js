@@ -2,6 +2,8 @@
 const BULB_SERVICE_UUID = "f000ffa0-0451-4000-b000-000000000000"; // "0000180a-0000-1000-8000-00805f9b34fb" // "00001800-0000-1000-8000-00805f9b34fb";
 const BULB_MAC_QUICK_ADDR = "98:5D:AD:25:DB:90";
 
+const BULB_COLOR_CHARACTERISTIC_UUID = "f000ffa4-0451-4000-b000-000000000000";
+
 ///////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
@@ -25,6 +27,8 @@ let paired_device = {
 	}
 }
 let last_device_id;
+
+let color_picker;
 
 ///////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -72,6 +76,52 @@ $(document).ready(function(){
 	console.log("Application Ready");
 
 	notification.stop();
+
+	/*
+
+	*/
+
+	color_picker = new iro.ColorPicker(".color-wheel", {
+		width : 256,
+		height : 256,
+		layout : [
+			{ 
+				component: iro.ui.Wheel,
+			}
+		],
+		handleRadius : 16
+	});
+
+	color_picker.on("input:change", (color) => {
+		if (paired_device.device_id){
+			setBulbColor(color.rgb.r, color.rgb.g, color.rgb.b);
+		}
+	})
+
+	function setBulbColor(r, g, b){
+		if (paired_device.device_id){
+
+			if (typeof paired_device.characteristic_map[BULB_COLOR_CHARACTERISTIC_UUID] == "undefined"){
+				console.log("Did not find bluetooth characteristic to set RGB");
+				return;
+			}
+
+			let array_uint8 = new Uint8Array([r, g, b]);
+
+			paired_device.characteristic_map[BULB_COLOR_CHARACTERISTIC_UUID].writeValue(array_uint8.buffer).then(() => {
+				console.log(`Pushed bulb color rgb(${r}, ${g}, ${b})`)
+			}).catch((e) => {
+				console.log("Failure", e);
+			});
+
+		} else {
+			console.log("No device found");
+		}
+	}
+
+	/*
+
+	*/
 
 	let bluetooth_scanning_state = false;
 	
@@ -173,13 +223,13 @@ $(document).ready(function(){
 				bluetooth_item.children("span.address").html(`Address : <em>${device.deviceId}</em>`);
 				bluetooth_item.appendTo($(".bluetooth-list"));
 
-				bluetooth_item.children("a").click(function(e){
+				bluetooth_item.children("button").click(function(e){
 					e.preventDefault();
 
 					let device_id = bluetooth_item.attr("device_id");					
 
 					$(".bluetooth-list > .bluetooth-item:not(.template)").each(function(){
-						$(this).children("a").attr("disabled", true);
+						$(this).children("button").attr("disabled", true);
 					})
 
 					requestPairDevice(device_id);
@@ -278,7 +328,76 @@ $(document).ready(function(){
 			paired_device.service = service;
 
 			service.getCharacteristics().then(characteristics => {
+
+				let doAsyncForEach = async () => {
+
+					await asyncForEach(characteristics, async (characteristic) => {
+						
+						paired_device.characteristic_map[characteristic.uuid] = characteristic;
+						console.log(`Characteristic: ${characteristic.uuid}`, characteristic)
+
+						try {
+
+							characteristic.startNotifications().then(() => {
+								characteristic.addEventListener("characteristicvaluechanged", (e) => {
+									console.log(`Characteristic Changed ${characteristic.uuid} :`, getByteArrayFromDataview(e.target.value, "getUint8"));
+								})
+							}).catch((e) => {
+								console.log(e);
+							})
+							
+
+						} catch (e){
+							console.log(e);
+							characteristic.addEventListener("characteristicvaluechanged", (e) => {
+								console.log(`Characteristic Changed ${characteristic.uuid} :`, getByteArrayFromDataview(e.target.value, "getUint8"));
+							})
+						}
+
+						try {
+
+							characteristic.readValue().then(value => {
+								console.log(`Characteristic Initial ${characteristic.uuid} :`, value)
+							}).catch((e) => {
+								console.log(e);
+							})
+							
+
+						} catch (e){
+							console.log(e);
+						}
+		
+					})
+
+					if (typeof paired_device.characteristic_map[BULB_COLOR_CHARACTERISTIC_UUID] !== "undefined"){
+
+						console.log("Connected to bulb, getting color for UI . . .");
+
+						paired_device.characteristic_map[BULB_COLOR_CHARACTERISTIC_UUID].readValue().then(value => {
+							
+							let byteArray = getByteArrayFromDataview(value, "getUint8");
+
+							console.log("Bulb color -> ", byteArray);
+							color_picker.color.set({
+								r : byteArray[0],
+								g : byteArray[1],
+								b : byteArray[2]
+							})
+
+						}).catch((e) => {
+							console.log(e);
+						})
+					}
+
+
+				}
+
+				doAsyncForEach();
+
+				/*
 				characteristics.forEach(characteristic => {
+
+
 
 					paired_device.characteristic_map[characteristic.uuid] = characteristic;
 					console.log(`Characteristic: ${characteristic.uuid}`, characteristic)
@@ -315,6 +434,8 @@ $(document).ready(function(){
 					}
 
 				})
+				*/
+
 			})
 
 		}).catch(error => {
@@ -392,14 +513,8 @@ $(document).ready(function(){
 
 			//
 
-			async function asyncForEach(array, callback) {
 
-				for (let index = 0; index < array.length; index++){
-					await callback(array[index], index, array);
-				}
-			}
-
-			const doAsyncForEach = async () => {
+			let doAsyncForEach = async () => {
 
 				await asyncForEach(characteristics, async (characteristic) => {
 					
@@ -463,4 +578,14 @@ $(document).ready(function(){
 		paired_device.server.disconnect();
 	})
 
+
 })
+
+//
+
+async function asyncForEach(array, callback) {
+
+	for (let index = 0; index < array.length; index++){
+		await callback(array[index], index, array);
+	}
+}
