@@ -1,96 +1,122 @@
+// Main.js ///////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
 
-const BULB_SERVICE_UUID = "f000ffa0-0451-4000-b000-000000000000"; // "0000180a-0000-1000-8000-00805f9b34fb" // "00001800-0000-1000-8000-00805f9b34fb";
-const BULB_MAC_QUICK_ADDR = "98:5D:AD:25:DB:90";
+const DEFAULT_BULB_CONFIG = {
+	BULB_SERVICE_UUID 				: "f000ffa0-0451-4000-b000-000000000000",
+	BULB_MAC_QUICK_ADDR 			: "98:5D:AD:25:DB:90",
+	BULB_COLOR_CHARACTERISTIC_UUID 	: "f000ffa4-0451-4000-b000-000000000000"
+}
 
-const BULB_COLOR_CHARACTERISTIC_UUID = "f000ffa4-0451-4000-b000-000000000000";
+let isElectron;
 
 ///////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+let last_device_id;
+
 let paired_device = {
-	device_reference : null,
-	device_id : null,
-	server : null,
-	service : null,
-	characteristic_map : null,
+
+	device_reference 	: null,
+	device_id 			: null,
+	server 				: null,
+	service 			: null,
+	characteristic_map 	: null,
 
 	reset : function(){
+
 		if (paired_device.device_id !== null && paired_device.device_id.replace(/ /g, "") !== ""){
 			last_device_id = paired_device.device_id;
 		}
-		paired_device.device_reference = null,
-		paired_device.device_id = null;
-		paired_device.server = null,
-		paired_device.service = null
-		paired_device.characteristic_map = [];
+
+		paired_device.device_reference 		= null;
+		paired_device.device_id 			= null;
+		paired_device.server 				= null;
+		paired_device.service 				= null;
+		paired_device.characteristic_map 	= [];
 		
 	}
 }
-let last_device_id;
+
+///////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
 let color_picker;
 
 ///////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-const notification = {
-	id : null,
-	set : function(message, id, timeout){
-		$(".notification > span").text(message);
-		notification.id = id;
-		$(".notification").slideDown(20);
+// Initiate UI
+// Device between pair via chrome or pair via electron
+// If successful pair with, show controller
 
+/*
 
-		if (timeout){
-			setTimeout(function(){
-				notification.stop(id)
-			}, timeout * 1000);
-		}
-	},
-	stop : function(id){
-		if ((typeof id == "undefined") || (typeof id !== undefined && notification.id == id)){
-			$(".notification").slideUp(40);
-		}
-	}
-}
+Preload:
 
-function getByteArrayFromDataview(dataview, bufferType){
-							
-	if (typeof bufferType == "undefined"){
-		bufferType = "getUint8";
-	}
+jQuery
+Bootstrap
+Iro Color Wheel
+Notification
+Pagination
 
-	let byteArray = [];
-	let bufferSize = dataview.byteLength;
-	for (let i = 0; i < bufferSize; i++){
-		byteArray[i] = dataview[bufferType](i);
-	}
-	return byteArray;
-}
+*/
 
-///////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
+$(document).ready(() => {
 
-$(document).ready(function(){
-	
 	console.log("Application Ready");
 
-	notification.stop();
+	//
 
-	/*
+	var userAgent = navigator.userAgent.toLowerCase();
+	isElectron = (userAgent.indexOf(' electron/') > -1);
 
-	*/
+	//
+
+	prepareColorControllers();
+	Notification.stop();
+	goToPage("main");
+	handleBluetoothScanner();
+	developerPanel();
+
+})
+
+function prepareColorControllers(){
+
+	let color_picker_size = window.getComputedStyle(document.body).getPropertyValue("--color-picker-size");
+
+	if (typeof color_picker_size !== "undefined"){
+		color_picker_size = parseInt(color_picker_size.replace("px", ""), 10);
+	}
+
+	if (isNaN(color_picker_size)){
+		color_picker_size = 256;
+	}
 
 	color_picker = new iro.ColorPicker(".color-wheel", {
-		width : 256,
-		height : 256,
+		width : color_picker_size,
+		height : color_picker_size,
+		handleRadius : 8,
+		wheelLightness : false,
 		layout : [
-			{ 
-				component: iro.ui.Wheel,
+			{
+				component : iro.ui.Wheel
 			}
-		],
-		handleRadius : 16
+		]
 	});
+
+	let brightness_slider = new iro.ColorPicker(".brightness-slider", {
+		width : color_picker_size,
+		layout : [
+			{
+				component : iro.ui.Slider
+			}
+		]
+	})
+
+
+	color_picker.on("color:change", function(color){
+		brightness_slider.color.set(color);
+	})
 
 	color_picker.on("input:change", (color) => {
 		if (paired_device.device_id){
@@ -98,94 +124,137 @@ $(document).ready(function(){
 		}
 	})
 
-	function setBulbColor(r, g, b){
-		if (paired_device.device_id){
+	brightness_slider.on("color:change", function(color){
+		color_picker.color.set(color);
+	})
 
-			if (typeof paired_device.characteristic_map[BULB_COLOR_CHARACTERISTIC_UUID] == "undefined"){
-				console.log("Did not find bluetooth characteristic to set RGB");
-				return;
-			}
+	$(".color-presets > a").click(function(e){
+		e.preventDefault();
+		
+		let color = $(this).css("background-color");
+		console.log(color);
+		color_picker.color.set(color);
+		
+		return false;
+	})
 
-			let array_uint8 = new Uint8Array([r, g, b]);
+}
 
-			paired_device.characteristic_map[BULB_COLOR_CHARACTERISTIC_UUID].writeValue(array_uint8.buffer).then(() => {
-				console.log(`Pushed bulb color rgb(${r}, ${g}, ${b})`)
-			}).catch((e) => {
-				console.log("Failure", e);
-			});
+//
 
-		} else {
-			console.log("No device found");
+function setBulbColor(r, g, b){
+	if (paired_device.device_id){
+
+		if (typeof paired_device.characteristic_map[DEFAULT_BULB_CONFIG.BULB_COLOR_CHARACTERISTIC_UUID] == "undefined"){
+			console.log("Did not find bluetooth characteristic to set RGB");
+			return;
 		}
+
+		let array_uint8 = new Uint8Array([r, g, b]);
+
+		paired_device.characteristic_map[DEFAULT_BULB_CONFIG.BULB_COLOR_CHARACTERISTIC_UUID].writeValue(array_uint8.buffer).then(() => {
+			console.log(`Pushed bulb color rgb(${r}, ${g}, ${b})`)
+		}).catch((e) => {
+			console.log("Failure", e);
+		});
+
+	} else {
+		console.log("No device found");
 	}
+}
 
-	/*
+//
 
-	*/
+function handleBluetoothScanner(){
 
 	let bluetooth_scanning_state = false;
-	
-	$(".scan-btn").mousedown(function(e){
+
+	// Scan for devices
+
+	$(".scan-btn").mousedown((e) => {
 
 		e.preventDefault();
 
 		if (e.which == 3){
-			requestPairDevice(BULB_MAC_QUICK_ADDR);
+			requestDevicePair(DEFAULT_BULB_CONFIG.BULB_MAC_QUICK_ADDR);
 			return;
 		}
 
 		$(this).attr("disabled", true);
+		$(".scanning-animation-div").fadeIn(100);
 
-		if (bluetooth_scanning_state == false){
+		if (isElectron) {
 
-			bluetooth_scanning_state = true;
+			// Electron-specific code
+			// Connect via backend
 
-			notification.set("Scanning . . .", "scanning");
+			if (bluetooth_scanning_state == false){
 
-			$(".scan-btn").text("Stop Scanning");
+				bluetooth_scanning_state = true;
 
-			$(".bluetooth-list > .bluetooth-item:not(.template)").remove();
+				Notification.set("Scanning . . .", "scanning");
 
-			console.log("Requesting Bluetooth Scan");
+				$(".scan-btn").text("Stop Scanning");
 
-			ipcRenderer.sendSync("bluetooth-state", {
-				mode : "discovery"
-			})
+				$(".bluetooth-list > .bluetooth-item:not(.template)").remove();
 
-			$(this).removeAttr("disabled");
+				console.log("Requesting Bluetooth Scan");
 
-			navigator.bluetooth.requestDevice({
-				acceptAllDevices : true,
-				optionalServices : ["generic_access", "battery_service", "device_information", BULB_SERVICE_UUID]
-			}).then(device => {
-				console.log("Bluetooth Discovery Callback")
-			}).catch(error => {
-				console.log(error);
-			}).finally(() => {
-				notification.stop("scanning");
-			})
+				ipcRenderer.sendSync("bluetooth-state", {
+					mode : "discovery"
+				})
+
+				$(this).removeAttr("disabled");
+
+				navigator.bluetooth.requestDevice({
+					acceptAllDevices : true,
+					optionalServices : ["generic_access", "battery_service", "device_information", DEFAULT_BULB_CONFIG.BULB_SERVICE_UUID]
+				}).then(device => {
+					console.log("Bluetooth Discovery Callback");
+				}).catch(error => {
+					console.log(error);
+				}).finally(() => {
+					Notification.stop("scanning");
+					$(".scanning-animation-div").fadeOut(100);
+				})
+
+			} else {
+
+				bluetooth_scanning_state = false;
+
+				Notification.set("Scanning stopped", "scanning-stopped", 2);
+
+				$(".scan-btn").text("Scan");
+
+				ipcRenderer.send("bluetooth-state", {
+					mode : "discovery",
+					stop : true
+				});
+
+				$(this).removeAttr("disabled");
+				$(".scanning-animation-div").fadeOut(100);
+
+			}
 
 		} else {
 
-			bluetooth_scanning_state = false;
+			// Use Chrome's bluetooth picker
 
-			notification.set("Scanning stopped", "scanning-stopped", 2);
-
-			$(".scan-btn").text("Scan");
-
-			ipcRenderer.send("bluetooth-state", {
-				mode : "discovery",
-				stop : true
-			});
-
-			$(this).removeAttr("disabled");
+			$(".scanning-animation-div").fadeOut(100);
 
 		}
 
+		return false;
+
 	})
 
-
 	//
+
+	// Display scan results
+
+	if (!isElectron){
+		return;
+	}
 
 	ipcRenderer.on("bluetooth-discovery-response", (event, response) => {
 
@@ -195,13 +264,11 @@ $(document).ready(function(){
 
 		let device_map = {};
 
-
 		devices.forEach((device, index) => {
 
 			// If the item doesn't exist, create it
 			// If the item does exist, and the name is different, change it
 			// If the item shouldn't exist, remove it
-
 			
 			if (typeof device_map[device.deviceId] == "undefined"){
 				console.log(`Set ${device.deviceId} to ${device.deviceName} [${typeof device.deviceId}, ${typeof device.deviceName}]`);
@@ -232,7 +299,7 @@ $(document).ready(function(){
 						$(this).children("button").attr("disabled", true);
 					})
 
-					requestPairDevice(device_id);
+					requestDevicePair(device_id);
 
 				})
 
@@ -265,140 +332,84 @@ $(document).ready(function(){
 
 	})
 
-	function requestPairDevice(device_id){
+}
 
-		console.log(`Requesting Bluetooth Pair for ${device_id}`);
-		notification.set("Pairing . . .", "pairing");
+function requestDevicePair(device_id){
+
+	console.log(`Requesting Bluetooth Pair for ${device_id}`);
+	// Notification.set("Pairing . . .", "pairing");
+
+	$(".loading-overlay").fadeIn(100);
+	$(".bluetooth-list > .bluetooth-item:not(.template)").remove();
+
+	if (isElectron){
 
 		ipcRenderer.sendSync("bluetooth-state", {
 			mode : "pairing",
 			deviceId : device_id
-
 		});
 
+	}
 
-		navigator.bluetooth.requestDevice({
-			acceptAllDevices : true,
-			optionalServices : ["generic_access", "battery_service", "device_information", BULB_SERVICE_UUID]
-		}).then(device => {
-			console.log("==================================")
-			console.log("Bluetooth Pairing Callback")
-			console.log(device);
+	navigator.bluetooth.requestDevice({
 
-			paired_device.device_reference = device;
-			paired_device.device_id = device_id;
-			last_device_id = device_id;
-			paired_device.characteristic_map = [];
+		acceptAllDevices : true,
+		optionalServices : ["generic_access", "battery_service", "device_information", DEFAULT_BULB_CONFIG.BULB_SERVICE_UUID]
+	
+	}).then(device => {
 
-			device.addEventListener("gattserverdisconnected", () => {
-				console.log("DEVICE DISCONNECTED - RESET MENUS");
-				paired_device.reset();
-				$(".device-handler > div > span.device_name").text(`Device Name: UNPAIRED`)
-				notification.set("Device disconnected", "device-unpaired", 10)
-			})
+		console.log("==================================")
+		console.log("Bluetooth Pairing Callback")
+		console.log(device);
 
-			return device.gatt.connect();
+		paired_device.device_reference 		= device;
+		paired_device.device_id 			= device_id;
+		last_device_id 						= device_id;
+		paired_device.characteristic_map 	= [];
 
-		}).then(server => {
+		device.addEventListener("gattserverdisconnected", () => {
+			console.log("DEVICE DISCONNECTED - RESET MENUS");
+			paired_device.reset();
+			$(".device-developer > span.device_name").text(`Device Name: UNPAIRED`)
+			Notification.set("Device disconnected", "device-unpaired", 10)
+		})
 
-			console.log("Getting light control server. . .");
-			console.log(server)
+		return device.gatt.connect();
 
-			paired_device.server = server;
+	}).then(server => {
 
-			notification.set("Paired successfully", "pair-success", 3);
+		console.log("Getting light control server. . .");
+		console.log(server)
 
-			$(".device-scan").hide();
+		paired_device.server = server;
 
-			$(".device-handler > div > span.device_name").text(`Device Name: ${paired_device.device_reference.name}`)
-			$(".device-handler > div > span.device_id").text(`Device ID: ${paired_device.device_reference.id}`)
+		// Notification.set("Paired successfully", "pair-success", 3);
 
-			server.getPrimaryServices().then(function(services){
-				console.log("SERVICES", services);
-			})
+		$(".device-developer span.device_name").text(`Device Name: ${paired_device.device_reference.name}`)
+		$(".device-developer > span.device_id").text(`Device ID: ${paired_device.device_reference.id}`)
 
-			return server.getPrimaryService(BULB_SERVICE_UUID);
+		server.getPrimaryServices().then(function(services){
+			console.log("SERVICES", services);
+		})
 
-		}).then(service => {
+		return server.getPrimaryService(DEFAULT_BULB_CONFIG.BULB_SERVICE_UUID);
 
-			console.log(`Service ${service.uuid}`);
+	}).then(service => {
 
-			$(".device-handler").show();
+		console.log(`Service ${service.uuid}`);
 
-			paired_device.service = service;
+		// Notification.stop();
+		$(".loading-overlay").fadeOut(100);
+		goToPage("controller");
 
-			service.getCharacteristics().then(characteristics => {
+		paired_device.service = service;
 
-				let doAsyncForEach = async () => {
+		service.getCharacteristics().then(characteristics => {
 
-					await asyncForEach(characteristics, async (characteristic) => {
-						
-						paired_device.characteristic_map[characteristic.uuid] = characteristic;
-						console.log(`Characteristic: ${characteristic.uuid}`, characteristic)
+			let doAsyncForEach = async () => {
 
-						try {
-
-							characteristic.startNotifications().then(() => {
-								characteristic.addEventListener("characteristicvaluechanged", (e) => {
-									console.log(`Characteristic Changed ${characteristic.uuid} :`, getByteArrayFromDataview(e.target.value, "getUint8"));
-								})
-							}).catch((e) => {
-								console.log(e);
-							})
-							
-
-						} catch (e){
-							console.log(e);
-							characteristic.addEventListener("characteristicvaluechanged", (e) => {
-								console.log(`Characteristic Changed ${characteristic.uuid} :`, getByteArrayFromDataview(e.target.value, "getUint8"));
-							})
-						}
-
-						try {
-
-							characteristic.readValue().then(value => {
-								console.log(`Characteristic Initial ${characteristic.uuid} :`, value)
-							}).catch((e) => {
-								console.log(e);
-							})
-							
-
-						} catch (e){
-							console.log(e);
-						}
-		
-					})
-
-					if (typeof paired_device.characteristic_map[BULB_COLOR_CHARACTERISTIC_UUID] !== "undefined"){
-
-						console.log("Connected to bulb, getting color for UI . . .");
-
-						paired_device.characteristic_map[BULB_COLOR_CHARACTERISTIC_UUID].readValue().then(value => {
-							
-							let byteArray = getByteArrayFromDataview(value, "getUint8");
-
-							console.log("Bulb color -> ", byteArray);
-							color_picker.color.set({
-								r : byteArray[0],
-								g : byteArray[1],
-								b : byteArray[2]
-							})
-
-						}).catch((e) => {
-							console.log(e);
-						})
-					}
-
-
-				}
-
-				doAsyncForEach();
-
-				/*
-				characteristics.forEach(characteristic => {
-
-
-
+				await asyncForEach(characteristics, async (characteristic) => {
+					
 					paired_device.characteristic_map[characteristic.uuid] = characteristic;
 					console.log(`Characteristic: ${characteristic.uuid}`, characteristic)
 
@@ -432,22 +443,56 @@ $(document).ready(function(){
 					} catch (e){
 						console.log(e);
 					}
-
+	
 				})
-				*/
 
-			})
+				setBulb()
 
-		}).catch(error => {
-			console.log(error);
-		}).finally(() => {
-			notification.stop("pairing");
+			}
+
+			doAsyncForEach();
+
 		})
 
+	}).catch((e) => {
+		console.log(e);
+		$(".loading-overlay").fadeOut(100);
+	})
+	
+}
 
+///////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+function setBulb(){
+
+	if (typeof paired_device.characteristic_map[DEFAULT_BULB_CONFIG.BULB_COLOR_CHARACTERISTIC_UUID] !== "undefined"){
+
+		console.log("Connected to bulb, getting color for UI . . .");
+
+		paired_device.characteristic_map[DEFAULT_BULB_CONFIG.BULB_COLOR_CHARACTERISTIC_UUID].readValue().then(value => {
+			
+			let byteArray = getByteArrayFromDataview(value, "getUint8");
+
+			console.log("Bulb color -> ", byteArray);
+			color_picker.color.set({
+				r : byteArray[0],
+				g : byteArray[1],
+				b : byteArray[2]
+			})
+
+		}).catch((e) => {
+			console.log(e);
+		})
 	}
 
-	//
+}
+
+///////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+// DEVELOPER
+
+function developerPanel(){
 
 	$("a.characteristic_value_get").click(function(e){
 		e.preventDefault();
@@ -552,8 +597,6 @@ $(document).ready(function(){
 
 	}
 
-	//
-
 	$("a.export_data").click(function(e){
 		e.preventDefault();
 		ipcRenderer.send("export-data");
@@ -562,26 +605,42 @@ $(document).ready(function(){
 	//
 
 	$("a.re-pair_device").click(function(e){
-		requestPairDevice(last_device_id);
+		requestDevicePair(last_device_id);
 	})
 
 	//
 
 	$("a.return_scanner").click(function(e){
 		paired_device.reset();
-		$(".device-handler").hide();
-		$(".device-scan").show();
+		goToPage("main")
 	})
 
 	$("a.device_disconnect").click(function(e){
 		e.preventDefault();
 		paired_device.server.disconnect();
 	})
+}
 
+///////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+// HELPER METHODS
 
-})
+function getByteArrayFromDataview(dataview, bufferType){
+							
+	if (typeof bufferType == "undefined"){
+		bufferType = "getUint8";
+	}
 
-//
+	let byteArray = [];
+	let bufferSize = dataview.byteLength;
+
+	for (let i = 0; i < bufferSize; i++){
+		byteArray[i] = dataview[bufferType](i);
+	}
+
+	return byteArray;
+
+}
 
 async function asyncForEach(array, callback) {
 

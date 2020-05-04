@@ -1,0 +1,121 @@
+.sidebar {
+  /*border: 1px solid red;*/
+  background-color: #131b20;
+  width: var(--sidebar-width);
+  height: 100vh;
+  z-index: 2;
+  position: absolute;
+  top: 0;
+  display: grid;
+  grid-template-rows: var(--topbar-height) auto;
+  transition: right 0.4s, left 0.4s;
+}
+
+/* Sidebar Header */
+
+.sidebar > .header {
+  padding: 5px;
+  color: #fff;
+  text-align: center;
+  background-color: rgba(0,0,0,0.1);
+  position: relative;
+}
+
+.sidebar > .header > .sidebar-toggle {
+  position: absolute;
+  top: 0px;
+  padding: 4px;
+  height: var(--topbar-height);
+  width: var(--topbar-button-width);
+  color: #fff;
+  text-decoration: none;
+  text-align: center;
+  transition: left 0.4s, right 0.4s;
+  background-color: #040506;
+  line-height: calc(var(--topbar-height) - 10px);
+}
+
+.sidebar.left > .header > .sidebar-toggle {
+  right: calc(var(--topbar-button-width) * -1);
+}
+
+.sidebar.left.open > .header > .sidebar-toggle {
+  right: 0;
+  top: 0;
+}
+
+.sidebar.right > .header > .sidebar-toggle {
+  left: calc(var(--topbar-button-width) * -1);
+  /*border: 1px solid #fff;*/
+  background-color: #0c3d5e;
+  transition: background-color 0.4s, left 0.4s, right 0.4s;
+}
+
+.sidebar.right.open > .header > .sidebar-toggle {
+  left: 0px;
+  top: 0px;
+  background-color: #040506;
+}
+
+/* Sidebar Content */
+
+.sidebar > .content {
+  display: grid;
+  grid-template-rows: auto min-content;
+}
+
+.sidebar > .content > .body {
+  overflow-y: auto;
+}
+
+.sidebar > .content > a, .sidebar > .content > div > a {
+  display: block;
+  padding: 5px 20px;
+  color: #fff;
+  background-color: rgba(0,0,0,0.4);
+  height: 60px;
+  line-height: 50px;
+  text-decoration: none;
+  transition: background-color 0.4s;
+  position: relative;
+}
+
+.sidebar > .content > a > i, .sidebar > .content > div > a > i {
+  position: absolute;
+  right: 20px;
+  height: 20px;
+  top: calc(20px);
+}
+
+.sidebar > .content > a.active, .sidebar > .content > div > a.active {
+  background-color: rgba(0,0,0,0.8);
+}
+
+.sidebar > .content > a[disabled], .sidebar > .content > div > a[disabled] {
+  background-color: rgba(25,25,25,0.8);
+  color: rgba(65,65,65,1);
+  cursor: default;
+}
+
+.sidebar > .content > a:not([disabled]):hover, .sidebar > .content > div > a:not([disabled]):hover {
+  background-color: rgba(0,0,0,0.8);
+}
+
+/* Sidebar Toggling */
+
+.sidebar.left.open {
+  left: 0px;
+}
+
+.sidebar.left {
+  left: calc(var(--sidebar-width) * -1);
+}
+
+.sidebar.right.open {
+  right: 0;
+}
+
+.sidebar.right {
+  right: calc(var(--sidebar-width) * -1);
+}
+

@@ -2,18 +2,29 @@
   --bg-color: #1b262c;
   --accent-color: #0f4c75;
   --accent-color-dark: #0b3551;
+  --sidebar-width: 260px;
+  --topbar-height: 60px;
+  --topbar-button-width: 60px;
+  --color-picker-size: 256px;
 }
 
 html {
   height: 100vh;
+  width: 100vw;
 }
 
 body {
   background-color: var(--bg-color);
   min-height: 100vh;
+  width: 100vw;
+  overflow: hidden;
 }
 
 .template {
+  display: none;
+}
+
+.old {
   display: none;
 }
 

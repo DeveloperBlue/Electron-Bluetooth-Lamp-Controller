@@ -35,6 +35,7 @@ function createWindow() {
 		y: 10
 	})
 
+	mainWindow.setMenu(null);
 	mainWindow.webContents.setDevToolsWebContents(devToolsWindow.webContents)
 	mainWindow.webContents.openDevTools({ mode: 'detach' })
 

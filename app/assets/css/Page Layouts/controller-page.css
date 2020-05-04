@@ -1,0 +1,161 @@
+/* Header */
+
+.page[page="controller"] > .header {
+  background-color: #11181d;
+  height: var(--topbar-height);
+  line-height: var(--topbar-height);
+  display: grid;
+  grid-template-columns: var(--topbar-button-width) auto var(--topbar-button-width);
+}
+
+.page[page="controller"] > .header > i {
+  height: 60px;
+  color: #425d6c;
+  display: block;
+  text-align: center;
+  line-height: 60px;
+  font-size: 22px;
+  background-color: rgba(0,0,0,0.2);
+}
+
+.page[page="controller"] > .header > h4 {
+  line-height: var(--topbar-height);
+}
+
+/* Color Wheel */
+
+.color-controller {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.color-wheel {
+  display: inline-block;
+  width: 256px;
+  height: 256px;
+  /*border: 1px solid #fff;*/
+  margin: 0 auto;
+}
+
+/* Slider */
+
+.slider-container {
+  /*display: grid;*/
+  grid-template-columns: 120px auto 120px;
+  height: 30px;
+  /*border: 1px solid #fff;*/
+}
+
+.slider-container > span, .slider-container > div {
+  display: inline-block;
+  line-height: 30px;
+  vertical-align: top;
+}
+
+.brightness-slider {
+  min-width: 40px;
+  margin: 0 10px;
+}
+
+.tab-buttons {
+  display: block;
+  margin-bottom: 20px;
+}
+
+.tab-buttons > button {
+  width: 140px;
+}
+
+.tab-buttons > button > i {
+  margin-left: 10px;
+  font-size: 14px;
+}
+
+.panel-layout[panel-type="dynamic"] {
+  grid-template-columns: auto 48px;
+  grid-template-rows: auto auto;
+  grid-row-gap: 20px;
+}
+
+.panel-layout[panel-type="temperature"] {
+  grid-template-columns: auto 48px;
+  grid-template-rows: auto auto;
+  grid-row-gap: 20px;
+}
+
+.color-presets {
+  width: 48px;
+  grid-column: 2;
+  grid-row: 1 / 3;
+  /*border: 1px solid #fff;*/
+  display: grid;
+  align-items: center;
+  /*margin-left: 120px;*/
+}
+
+.color-presets > a {
+  display: block;
+  width: 38px;
+  height: 38px;
+  background-color: var(--bg-color);
+  border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+  padding: 6px;
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.color-presets > a.red {
+  background-color: red;
+}
+
+.color-presets > a.red:hover {
+  box-shadow: 0px 0px 4px 4px red;
+}
+
+.color-presets > a.blue {
+  background-color: blue;
+}
+
+.color-presets > a.blue:hover {
+  box-shadow: 0px 0px 4px 4px blue;
+}
+
+.color-presets > a.green {
+  background-color: green;
+}
+
+.color-presets > a.green:hover {
+  box-shadow: 0px 0px 4px 4px green;
+}
+
+.color-presets > a.yellow {
+  background-color: yellow;
+}
+
+.color-presets > a.yellow:hover {
+  box-shadow: 0px 0px 4px 4px yellow;
+}
+
+.color-presets > a.white {
+  background-color: white;
+}
+
+.color-presets > a.white:hover {
+  box-shadow: 0px 0px 4px 4px white;
+}
+
+.color-presets > a > span {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background-color: var(--bg-color);
+  border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+}
+
+/* Panel Layouts */
+
+.panel-layout {
+  display: grid;
+  padding: 40px;
+  box-shadow: 0px 5px 5px 5px rgba(0,0,0,0.1);
+}
+

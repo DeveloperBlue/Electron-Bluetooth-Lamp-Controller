@@ -7,11 +7,14 @@
     <title>Bluetooth-LED-Controller</title>
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
-    <link rel="stylesheet" href="assets/css/color-wheel.css">
-    <link rel="stylesheet" href="assets/css/device-handler-page.css">
-    <link rel="stylesheet" href="assets/css/device-scan-page.css">
+    <link rel="stylesheet" href="assets/css/loading.css">
     <link rel="stylesheet" href="assets/css/notification.css">
+    <link rel="stylesheet" href="assets/css/Page%20Layouts/controller-page.css">
+    <link rel="stylesheet" href="assets/css/Page%20Layouts/developer-page.css">
+    <link rel="stylesheet" href="assets/css/Page%20Layouts/main-page.css">
+    <link rel="stylesheet" href="assets/css/pages.css">
     <link rel="stylesheet" href="assets/css/scrollbar.css">
+    <link rel="stylesheet" href="assets/css/sidebar.css">
     <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 
@@ -19,43 +22,99 @@
     <!-- Start: Notification -->
     <div class="notification" style="display: none;"><span>Notification Text</span></div>
     <!-- End: Notification -->
-    <!-- Start: Device Scan Page -->
-    <div class="device-scan" style="/*display: none;*/">
+    <!-- Start: Sidebar -->
+    <div class="sidebar right open">
         <!-- Start: Header -->
-        <div class="header"><i class="fab fa-bluetooth-b"></i>
-            <h3 class="text-center text-white">Bluetooth Devices&nbsp;</h3><a href="#"><i class="fab fa-github"></i></a></div>
+        <div class="header"><a class="sidebar-toggle" href="#"><i class="fas fa-bars"></i></a></div>
         <!-- End: Header -->
         <!-- Start: Content -->
         <div class="content">
-            <!-- Start: Device List -->
-            <div class="bluetooth-list">
-                <div class="bluetooth-item template"><span class="name">Name :</span><span class="address">Address :</span><button class="btn btn-primary" type="button">Connect</button></div>
-            </div>
-            <!-- End: Device List -->
-        </div>
-        <!-- End: Content -->
-        <!-- Start: Footer -->
-        <div class="footer"><button class="btn btn-primary scan-btn" type="button">Scan</button></div>
-        <!-- End: Footer -->
+            <div class="body"><a class="active" href="#" page_trigger="main">Scanner<i class="fab fa-bluetooth"></i></a><a href="#" page_trigger="controller">Controller<i class="fas fa-dot-circle"></i></a><a href="#" page_trigger="settings">Settings<i class="fas fa-cog"></i></a></div>
+            <div
+                class="footer"><a href="#" page_trigger="developer">Developer<i class="fas fa-flask"></i></a><a href="https://github.com/DeveloperBlue/Electron-Bluetooth-Lamp-Controller" target="_blank">GitHub<i class="fab fa-github"></i></a></div>
     </div>
-    <!-- End: Device Scan Page -->
-    <!-- Start: Device Handler Page -->
-    <div class="device-handler" style="/*display: none;*/">
-        <div class="container text-white">
-            <div class="color-controller">
-                <div class="color-wheel"></div><span>Text</span></div>
-            <!-- Start: Debug -->
-            <div class="debug-div">
+    <!-- End: Content -->
+    </div>
+    <!-- End: Sidebar -->
+    <!-- Start: Loading Overlay -->
+    <div class="loading-overlay" style="display: none;">
+        <div class="loading-animation-div"><img src="assets/img/pairing_animated.svg"><span style="/*display: none;*/">Pairing</span></div>
+    </div>
+    <!-- End: Loading Overlay -->
+    <!-- Start: Page Container -->
+    <div class="pages">
+        <!-- Start: Page - Scanner -->
+        <div class="page device-scan" page="main" page_column_x="0">
+            <!-- Start: Header -->
+            <div class="header"><i class="fab fa-bluetooth-b"></i>
+                <h3 class="text-center text-white">Bluetooth Devices&nbsp;</h3><i class="fas fa-bars"></i></div>
+            <!-- End: Header -->
+            <!-- Start: Content -->
+            <div class="content">
+                <!-- Start: Device List -->
+                <div class="bluetooth-list">
+                    <div class="bluetooth-item template"><span class="name">Name :</span><span class="address">Address :</span><button class="btn btn-primary" type="button">Connect</button></div>
+                </div>
+                <!-- End: Device List -->
+            </div>
+            <!-- End: Content -->
+            <!-- Start: Footer -->
+            <div class="footer"><button class="btn btn-primary scan-btn" type="button">Scan</button>
+                <!-- Start: Scanning Animation -->
+                <div class="scanning-animation-div" style="display : none;"><img src="assets/img/pairing_animated.svg"></div>
+                <!-- End: Scanning Animation -->
+            </div>
+            <!-- End: Footer -->
+        </div>
+        <!-- End: Page - Scanner -->
+        <!-- Start: Page - Controller -->
+        <div class="page active" page="controller" page_column_x="1">
+            <!-- Start: Header -->
+            <div class="header"><i class="far fa-lightbulb"></i>
+                <h4 class="text-center text-white"></h4><i class="fas fa-bars"></i></div>
+            <!-- End: Header -->
+            <div class="container text-white">
+                <!-- Start: Box -->
+                <div class="color-controller">
+                    <!-- Start: Button Panel -->
+                    <div class="btn-group tab-buttons" role="group"><button class="btn btn-primary active" type="button">Dynamic<i class="fas fa-sliders-h"></i></button><button class="btn btn-primary" type="button">Temperature<i class="fas fa-temperature-low"></i></button></div>
+                    <!-- End: Button Panel -->
+                    <!-- Start: Panel Dynamic -->
+                    <div class="panel-layout" panel-type="dynamic">
+                        <div class="color-wheel"></div>
+                        <div class="color-presets"><a class="red" href="#"><span></span></a><a class="blue" href="#"><span></span></a><a class="green" href="#"><span></span></a><a class="yellow" href="#"><span></span></a><a class="white" href="#"><span></span></a></div>
+                        <div class="slider-container"><span><i class="far fa-moon"></i></span>
+                            <div class="brightness-slider"></div><span><i class="fas fa-sun"></i></span></div>
+                    </div>
+                    <!-- End: Panel Dynamic -->
+                    <!-- Start: Panel Temperature -->
+                    <div class="panel-layout" panel-type="temperature" style="display : none;">
+                        <div class="color-presets"><a class="red" href="#"><span></span></a><a class="blue" href="#"><span></span></a><a class="green" href="#"><span></span></a><a class="yellow" href="#"><span></span></a><a class="white" href="#"><span></span></a></div>
+                        <div class="slider-container"><span><i class="fas fa-temperature-low"></i></span>
+                            <div class="brightness-slider"></div><span><i class="fas fa-temperature-high"></i></span></div>
+                    </div>
+                    <!-- End: Panel Temperature -->
+                </div>
+                <!-- End: Box -->
+            </div>
+        </div>
+        <!-- End: Page - Controller -->
+        <!-- Start: Page - Developer -->
+        <div class="page" page="developer" page_column_x="2">
+            <div class="container text-white device-developer">
                 <h4>Bluetooth Device Handler</h4><span class="device_name">Device Name :</span><span class="device_id">Device ID:</span><a class="record_data" href="#">Record Data</a><a class="export_data" href="#">Export Data</a><a class="re-pair_device"
                     href="#">Re-pair to Device</a>
                 <div class="characteristic-panel"><input type="text" class="characteristic_uuid" placeholder="UUID"><a class="characteristic_value_get" href="#">Get</a><input type="text" class="characteristic_value"><a class="characteristic_value_set" href="#">Set</a></div><a class="return_scanner"
                     href="#">Return to Scanner</a><a class="device_disconnect" href="#">Disconnect</a></div>
-            <!-- End: Debug -->
         </div>
+        <!-- End: Page - Developer -->
     </div>
-    <!-- End: Device Handler Page -->
+    <!-- End: Page Container -->
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
+    <script src="assets/js/pagination.js"></script>
+    <script src="assets/js/notification.js"></script>
     <script src="C:/_PROJECTS/Electron-Bluetooth-Lamp-Controller/app/assets/js/index.js"></script>
 </body>
 

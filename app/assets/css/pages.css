@@ -1,0 +1,30 @@
+.pages {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.pages > .page {
+  height: 100vh;
+  width: 100vw;
+  /*border: 1px solid #fff;*/
+  position: absolute;
+  top: 0;
+}
+
+.page[page="main"] {
+  /*background-color: rgba(255,255,0,0.8);*/
+}
+
+.page[page="controller"] {
+  /*background-color: rgba(0,255,255,0.8);*/
+}
+
+.page[page="developer"] {
+  /*background-color: rgba(255,0,255,0.8);*/
+}
+
+.pages > .page:not(.active) {
+  left: 100vw;
+}
+
