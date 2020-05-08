@@ -135,8 +135,8 @@
 
 .scanning-animation-div {
   position: absolute;
-  width: 64px;
-  height: 64px;
+  width: 32px;
+  height: 32px;
   right: 5px;
   bottom: 0px;
 }

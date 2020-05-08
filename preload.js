@@ -2,7 +2,6 @@
 // It has the same sandbox as a Chrome extension.
 
 const electron = require('electron');
-const iro = require('@jaames/iro');
 
 window.addEventListener('DOMContentLoaded', () => {
   const replaceText = (selector, text) => {
@@ -17,5 +16,4 @@ window.addEventListener('DOMContentLoaded', () => {
 
 process.once('loaded', () => {
   global.ipcRenderer = electron.ipcRenderer;
-  global.iro = iro;
 });

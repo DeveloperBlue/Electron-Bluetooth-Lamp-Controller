@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="assets/css/Page%20Layouts/developer-page.css">
     <link rel="stylesheet" href="assets/css/Page%20Layouts/main-page.css">
     <link rel="stylesheet" href="assets/css/pages.css">
+    <link rel="stylesheet" href="assets/css/power-button.css">
     <link rel="stylesheet" href="assets/css/scrollbar.css">
     <link rel="stylesheet" href="assets/css/sidebar.css">
     <link rel="stylesheet" href="assets/css/styles.css">
@@ -23,7 +24,7 @@
     <div class="notification" style="display: none;"><span>Notification Text</span></div>
     <!-- End: Notification -->
     <!-- Start: Sidebar -->
-    <div class="sidebar right open">
+    <div class="sidebar right">
         <!-- Start: Header -->
         <div class="header"><a class="sidebar-toggle" href="#"><i class="fas fa-bars"></i></a></div>
         <!-- End: Header -->
@@ -61,7 +62,7 @@
             <!-- Start: Footer -->
             <div class="footer"><button class="btn btn-primary scan-btn" type="button">Scan</button>
                 <!-- Start: Scanning Animation -->
-                <div class="scanning-animation-div" style="display : none;"><img src="assets/img/pairing_animated.svg"></div>
+                <div class="scanning-animation-div" style="display: none;"><img src="assets/img/pairing_animated.svg"></div>
                 <!-- End: Scanning Animation -->
             </div>
             <!-- End: Footer -->
@@ -70,21 +71,27 @@
         <!-- Start: Page - Controller -->
         <div class="page active" page="controller" page_column_x="1">
             <!-- Start: Header -->
-            <div class="header"><i class="far fa-lightbulb"></i>
+            <div class="header"><a href="#" page_trigger="main"><i class="fab fa-bluetooth"></i></a>
                 <h4 class="text-center text-white"></h4><i class="fas fa-bars"></i></div>
             <!-- End: Header -->
             <div class="container text-white">
                 <!-- Start: Box -->
                 <div class="color-controller">
                     <!-- Start: Button Panel -->
-                    <div class="btn-group tab-buttons" role="group"><button class="btn btn-primary active" type="button">Dynamic<i class="fas fa-sliders-h"></i></button><button class="btn btn-primary" type="button">Temperature<i class="fas fa-temperature-low"></i></button></div>
+                    <div class="btn-group tab-buttons" role="group"><button class="btn btn-primary active" type="button">Color<i class="fas fa-sliders-h"></i></button><button class="btn btn-primary" type="button">Temperature<i class="fas fa-temperature-low"></i></button></div>
                     <!-- End: Button Panel -->
                     <!-- Start: Panel Dynamic -->
-                    <div class="panel-layout" panel-type="dynamic">
-                        <div class="color-wheel"></div>
+                    <div class="panel-layout" panel-type="dynamic"><a class="power-button" href="#"><i class="fas fa-power-off"></i></a>
+                        <!-- Start: Color Wheel -->
+                        <div class="color-wheel disabled-ui"></div>
+                        <!-- End: Color Wheel -->
+                        <!-- Start: RGB Presets -->
                         <div class="color-presets"><a class="red" href="#"><span></span></a><a class="blue" href="#"><span></span></a><a class="green" href="#"><span></span></a><a class="yellow" href="#"><span></span></a><a class="white" href="#"><span></span></a></div>
+                        <!-- End: RGB Presets -->
+                        <!-- Start: Brightness Slider -->
                         <div class="slider-container"><span><i class="far fa-moon"></i></span>
-                            <div class="brightness-slider"></div><span><i class="fas fa-sun"></i></span></div>
+                            <div class="brightness-slider"></div><span><i class="fas fa-sun" style="font-size: 19px;"></i></span></div>
+                        <!-- End: Brightness Slider -->
                     </div>
                     <!-- End: Panel Dynamic -->
                     <!-- Start: Panel Temperature -->
@@ -108,14 +115,17 @@
                     href="#">Return to Scanner</a><a class="device_disconnect" href="#">Disconnect</a></div>
         </div>
         <!-- End: Page - Developer -->
+        <!-- Start: Page - Settings -->
+        <div class="page" page="settings" page_column_x="2"></div>
+        <!-- End: Page - Settings -->
     </div>
     <!-- End: Page Container -->
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/bootstrap/js/bootstrap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
+    <script src="assets/js/iro.min.js"></script>
     <script src="assets/js/pagination.js"></script>
     <script src="assets/js/notification.js"></script>
-    <script src="C:/_PROJECTS/Electron-Bluetooth-Lamp-Controller/app/assets/js/index.js"></script>
+    <script src="http://localhost:3000/index.js"></script>
 </body>
 
 </html>

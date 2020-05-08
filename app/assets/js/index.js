@@ -2,9 +2,10 @@
 /////////////////////////////////////////////////////////////////
 
 const DEFAULT_BULB_CONFIG = {
-	BULB_SERVICE_UUID 				: "f000ffa0-0451-4000-b000-000000000000",
 	BULB_MAC_QUICK_ADDR 			: "98:5D:AD:25:DB:90",
-	BULB_COLOR_CHARACTERISTIC_UUID 	: "f000ffa4-0451-4000-b000-000000000000"
+	BULB_SERVICE_UUID 				: "f000ffa0-0451-4000-b000-000000000000",
+	BULB_COLOR_CHARACTERISTIC_UUID 	: "f000ffa4-0451-4000-b000-000000000000",
+	BULB_POWER_CHARACTERISTIC_UUID  : "f000ffa3-0451-4000-b000-000000000000"
 }
 
 let isElectron;
@@ -42,6 +43,23 @@ let paired_device = {
 
 let color_picker;
 
+let power_state = {
+	state : false,
+	listeners : [],
+	set : function(state){
+		power_state.state = state;
+		power_state.listeners.forEach(function(listener){
+			listener(state);
+		})
+	},
+	get : function(){
+		return power_state.state;
+	},
+	onChange : function(fn){
+		power_state.listeners.push(fn);
+	}
+}
+
 ///////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
@@ -72,12 +90,57 @@ $(document).ready(() => {
 
 	//
 
+	preparePowerControllers();
 	prepareColorControllers();
 	Notification.stop();
 	goToPage("main");
 	handleBluetoothScanner();
 	developerPanel();
 
+})
+
+function preparePowerControllers(){
+
+	$(".power-button").click(function(e){
+		e.preventDefault();
+
+		if (paired_device.device_id){
+
+			power_state.set(!power_state.get());
+			setBulbPowerState(power_state.get());
+
+		} else {
+			Notification.set("No device paired", "no-device", 3);
+		}
+
+		return false;
+
+	})
+
+	power_state.onChange(function(state){
+		if (state){
+			$(".power-button").addClass("on");
+			$(".color-wheel, .color-presets, .slider-container").removeClass("disabled-ui");
+		} else {
+			$(".power-button").removeClass("on");
+			$(".color-wheel, .color-presets, .slider-container").addClass("disabled-ui");
+		}
+	})
+}
+
+$(window).resize(function(){
+
+	let color_picker_size = window.getComputedStyle(document.body).getPropertyValue("--color-picker-size");
+
+	if (typeof color_picker_size !== "undefined"){
+		color_picker_size = parseInt(color_picker_size.replace("px", ""), 10);
+	}
+
+	if (isNaN(color_picker_size)){
+		color_picker_size = 256;
+	}
+
+	color_picker.resize(color_picker_size);
 })
 
 function prepareColorControllers(){
@@ -128,14 +191,26 @@ function prepareColorControllers(){
 		color_picker.color.set(color);
 	})
 
-	$(".color-presets > a").click(function(e){
-		e.preventDefault();
-		
-		let color = $(this).css("background-color");
-		console.log(color);
-		color_picker.color.set(color);
-		
-		return false;
+	brightness_slider.on("input:change", (color) => {
+		if (paired_device.device_id){
+			setBulbColor(color.rgb.r, color.rgb.g, color.rgb.b);
+		}
+	})
+
+	$(".color-presets > a").each(function(index){
+
+		$(this).click(function(e){
+			e.preventDefault();
+			
+			let color = $(this).css("background-color");
+			console.log(color);
+			color_picker.color.set(color);
+			
+			if (paired_device.device_id){
+				setBulbColor(color_picker.color.rgb.r, color_picker.color.rgb.g, color_picker.color.rgb.b);
+			}
+
+		})
 	})
 
 }
@@ -143,27 +218,126 @@ function prepareColorControllers(){
 //
 
 function setBulbColor(r, g, b){
-	if (paired_device.device_id){
 
-		if (typeof paired_device.characteristic_map[DEFAULT_BULB_CONFIG.BULB_COLOR_CHARACTERISTIC_UUID] == "undefined"){
-			console.log("Did not find bluetooth characteristic to set RGB");
-			return;
-		}
-
-		let array_uint8 = new Uint8Array([r, g, b]);
-
-		paired_device.characteristic_map[DEFAULT_BULB_CONFIG.BULB_COLOR_CHARACTERISTIC_UUID].writeValue(array_uint8.buffer).then(() => {
-			console.log(`Pushed bulb color rgb(${r}, ${g}, ${b})`)
-		}).catch((e) => {
-			console.log("Failure", e);
-		});
-
-	} else {
-		console.log("No device found");
+	if (!(paired_device.device_id)){
+		console.log("Failed to set bulb color - no device paired");
+		return
 	}
+
+	if (typeof paired_device.characteristic_map[DEFAULT_BULB_CONFIG.BULB_COLOR_CHARACTERISTIC_UUID] == "undefined"){
+		console.log("Did not find bluetooth characteristic to set RGB");
+		return;
+	}
+
+	let array_uint8 = new Uint8Array([r, g, b]);
+
+	paired_device.characteristic_map[DEFAULT_BULB_CONFIG.BULB_COLOR_CHARACTERISTIC_UUID].writeValue(array_uint8.buffer).then(() => {
+		console.log(`Pushed bulb color rgb(${r}, ${g}, ${b})`)
+	}).catch((e) => {
+		console.log("Failure", e);
+	});
 }
 
 //
+
+function getBulbColor(doUpdateUI){
+
+	if (!(paired_device.device_id)){
+		console.log("Failed to get bulb color - no device paired");
+		return
+	}
+
+	if (typeof paired_device.characteristic_map[DEFAULT_BULB_CONFIG.BULB_COLOR_CHARACTERISTIC_UUID] == "undefined"){
+		console.log("Did not find bluetooth characteristic to get RGB");
+		return;
+	}
+
+	paired_device.characteristic_map[DEFAULT_BULB_CONFIG.BULB_COLOR_CHARACTERISTIC_UUID].readValue().then(value => {
+		
+		let byteArray = getByteArrayFromDataview(value, "getUint8");
+
+		console.log("Bulb color -> ", byteArray);
+
+		let color_object = {
+			r : byteArray[0],
+			g : byteArray[1],
+			b : byteArray[2]
+		}
+
+		if (doUpdateUI){
+			color_picker.color.set(color_object)
+		}
+
+		return color_object;
+
+	}).catch((e) => {
+		console.log(e);
+	})
+}
+
+///////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+function setBulbPowerState(state){
+
+	if (!(paired_device.device_id)){
+		console.log("Failed to set bulb power state - no device paired");
+		return
+	}
+
+	if (typeof paired_device.characteristic_map[DEFAULT_BULB_CONFIG.BULB_POWER_CHARACTERISTIC_UUID] == "undefined"){
+		console.log("Did not find bluetooth characteristic to set power state");
+		return;
+	}
+
+	let array_uint8 = new Uint8Array([83, (state == true) ? 79 : 67]);
+
+	paired_device.characteristic_map[DEFAULT_BULB_CONFIG.BULB_POWER_CHARACTERISTIC_UUID].writeValue(array_uint8.buffer).then(() => {
+		console.log(`Pushed bulb power state ${(state == true) ? "true" : "false"}`, array_uint8);
+		getBulbPowerState(true);
+	}).catch((e) => {
+		console.log("Failure", e);
+	});
+
+}
+
+function getBulbPowerState(doUpdateUI){
+
+	if (!(paired_device.device_id)){
+		console.log("Failed to get bulb power state - no device paired");
+		return
+	}
+
+	if (typeof paired_device.characteristic_map[DEFAULT_BULB_CONFIG.BULB_POWER_CHARACTERISTIC_UUID] == "undefined"){
+		console.log("Did not find bluetooth characteristic to get power state");
+		return;
+	}
+
+	paired_device.characteristic_map[DEFAULT_BULB_CONFIG.BULB_POWER_CHARACTERISTIC_UUID].readValue().then(value => {
+		
+		let byteArray = getByteArrayFromDataview(value, "getUint8");
+
+		let state = (byteArray[0] == 79);
+
+		console.log("Bulb power state -> ", state, byteArray);
+
+		
+
+		if (doUpdateUI){
+			power_state.set(state);
+		}
+
+		return state;
+
+	}).catch((e) => {
+		console.log(e);
+	})
+
+
+}
+
+///////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
 function handleBluetoothScanner(){
 
@@ -239,6 +413,18 @@ function handleBluetoothScanner(){
 		} else {
 
 			// Use Chrome's bluetooth picker
+
+			navigator.bluetooth.requestDevice({
+				acceptAllDevices : true,
+				optionalServices : ["generic_access", "battery_service", "device_information", DEFAULT_BULB_CONFIG.BULB_SERVICE_UUID]
+			}).then(device => {
+				console.log("Bluetooth Discovery Callback");
+			}).catch(error => {
+				console.log(error);
+			}).finally(() => {
+				Notification.stop("scanning");
+				$(".scanning-animation-div").fadeOut(100);
+			})
 
 			$(".scanning-animation-div").fadeOut(100);
 
@@ -371,7 +557,7 @@ function requestDevicePair(device_id){
 			console.log("DEVICE DISCONNECTED - RESET MENUS");
 			paired_device.reset();
 			$(".device-developer > span.device_name").text(`Device Name: UNPAIRED`)
-			Notification.set("Device disconnected", "device-unpaired", 10)
+			Notification.set("Device disconnected", "device-unpaired", 2)
 		})
 
 		return device.gatt.connect();
@@ -413,6 +599,8 @@ function requestDevicePair(device_id){
 					paired_device.characteristic_map[characteristic.uuid] = characteristic;
 					console.log(`Characteristic: ${characteristic.uuid}`, characteristic)
 
+					/*
+
 					try {
 
 						characteristic.startNotifications().then(() => {
@@ -443,10 +631,13 @@ function requestDevicePair(device_id){
 					} catch (e){
 						console.log(e);
 					}
+
+					*/
 	
 				})
 
-				setBulb()
+				getBulbColor(true);
+				getBulbPowerState(true);
 
 			}
 
@@ -456,37 +647,12 @@ function requestDevicePair(device_id){
 
 	}).catch((e) => {
 		console.log(e);
+		Notification.set("Failed to pair to device", "pair-failure", 3);
 		$(".loading-overlay").fadeOut(100);
 	})
 	
 }
 
-///////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-function setBulb(){
-
-	if (typeof paired_device.characteristic_map[DEFAULT_BULB_CONFIG.BULB_COLOR_CHARACTERISTIC_UUID] !== "undefined"){
-
-		console.log("Connected to bulb, getting color for UI . . .");
-
-		paired_device.characteristic_map[DEFAULT_BULB_CONFIG.BULB_COLOR_CHARACTERISTIC_UUID].readValue().then(value => {
-			
-			let byteArray = getByteArrayFromDataview(value, "getUint8");
-
-			console.log("Bulb color -> ", byteArray);
-			color_picker.color.set({
-				r : byteArray[0],
-				g : byteArray[1],
-				b : byteArray[2]
-			})
-
-		}).catch((e) => {
-			console.log(e);
-		})
-	}
-
-}
 
 ///////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -503,6 +669,8 @@ function developerPanel(){
 		paired_device.characteristic_map[characteristic_uuid].readValue().then(value => {
 			
 			let byteArray = getByteArrayFromDataview(value, "getUint8");
+
+			$("input.characteristic_value").val(byteArray.split(", "));
 
 			console.log("Value", value, byteArray);
 			

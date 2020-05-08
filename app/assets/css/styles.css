@@ -8,9 +8,18 @@
   --color-picker-size: 256px;
 }
 
+@media (max-width: 576px) {
+  :root {
+    --topbar-height: 50px;
+    --topbar-button-width: 50px;
+    --color-picker-size: 214px;
+  }
+}
+
 html {
   height: 100vh;
   width: 100vw;
+  overflow-x: hidden;
 }
 
 body {

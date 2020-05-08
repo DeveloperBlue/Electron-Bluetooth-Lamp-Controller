@@ -1,0 +1,30 @@
+.power-button {
+  width: 64px;
+  height: 64px;
+  position: absolute;
+  line-height: 64px;
+  border-radius: 50%;
+  background-color: #0e1317;
+  font-size: 24px;
+  color: rgb(148,0,0);
+  transition: color 0.4s, background-color 0.4s, text-shadow 0.6s;
+  left: 20px;
+  top: 20px;
+}
+
+.power-button.on {
+  color: rgb(0,220,0);
+  text-shadow: 0px 0px 4px rgb(0,255,0);
+}
+
+.power-button:not(.on):hover {
+  background-color: #131b20;
+  color: red;
+}
+
+.power-button.on:hover {
+  color: rgb(0,117,0);
+  background-color: #0e1317;
+  text-shadow: 0px 0px 0px green;
+}
+
