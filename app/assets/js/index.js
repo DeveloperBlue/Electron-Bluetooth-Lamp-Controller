@@ -4,7 +4,7 @@
 const DEFAULT_BULB_CONFIG = {
 	BULB_MAC_QUICK_ADDR 			: "98:5D:AD:25:DB:90",
 	BULB_SERVICE_UUID 				: "f000ffa0-0451-4000-b000-000000000000",
-	BULB_COLOR_CHARACTERISTIC_UUID 	: "f000ffa4-0451-4000-b000-000000000000",
+	BULB_COLOR_CHARACTERISTIC_UUID 	: "f000ffa5-0451-4000-b000-000000000000",
 	BULB_POWER_CHARACTERISTIC_UUID  : "f000ffa3-0451-4000-b000-000000000000"
 }
 
@@ -90,6 +90,7 @@ $(document).ready(() => {
 
 	//
 
+	prepareControlPanelSwapper();
 	preparePowerControllers();
 	prepareColorControllers();
 	Notification.stop();
@@ -98,6 +99,28 @@ $(document).ready(() => {
 	developerPanel();
 
 })
+
+function prepareControlPanelSwapper(){
+
+	$(".tab-buttons > button").click(function(e){
+		e.preventDefault();
+
+		let panel_type = $(this).attr("panel");
+		let active_panel = $(`.panel-layout.active`).attr("panel-type");
+
+		if (panel_type == active_panel) return;
+
+		console.log(`Switching to panel ${panel_type} from ${active_panel}`);
+
+		$(".tab-buttons > button").removeClass("active");
+		$(this).addClass("active");
+
+		$(`.panel-layout.active`).removeClass("active").slideUp(100);
+		$(`.panel-layout[panel-type="${panel_type}"]`).addClass("active").slideDown(100);
+
+		return false;
+	})
+}
 
 function preparePowerControllers(){
 
@@ -120,10 +143,10 @@ function preparePowerControllers(){
 	power_state.onChange(function(state){
 		if (state){
 			$(".power-button").addClass("on");
-			$(".color-wheel, .color-presets, .slider-container").removeClass("disabled-ui");
+			$(".color-wheel, .color-presets, .slider-container, .temperature-slider-container").removeClass("disabled-ui");
 		} else {
 			$(".power-button").removeClass("on");
-			$(".color-wheel, .color-presets, .slider-container").addClass("disabled-ui");
+			$(".color-wheel, .color-presets, .slider-container, .temperature-slider-container").addClass("disabled-ui");
 		}
 	})
 }
@@ -155,6 +178,8 @@ function prepareColorControllers(){
 		color_picker_size = 256;
 	}
 
+	//
+
 	color_picker = new iro.ColorPicker(".color-wheel", {
 		width : color_picker_size,
 		height : color_picker_size,
@@ -176,26 +201,46 @@ function prepareColorControllers(){
 		]
 	})
 
-
-	color_picker.on("color:change", function(color){
-		brightness_slider.color.set(color);
+	let temperature_slider = new iro.ColorPicker(".temperature-slider", {
+		width : color_picker_size,
+		layout : [
+			{
+				component : iro.ui.Slider,
+				options : {
+					sliderType : "kelvin",
+					minTemperature : 1000,
+					maxTemperature : 10000
+				}
+			}
+		]
 	})
 
-	color_picker.on("input:change", (color) => {
+	//
+
+	function setBulbColorFromHandler(color){
 		if (paired_device.device_id){
 			setBulbColor(color.rgb.r, color.rgb.g, color.rgb.b);
 		}
-	})
+	}
 
-	brightness_slider.on("color:change", function(color){
+	function updateColorHandler(color){
 		color_picker.color.set(color);
-	})
+		brightness_slider.color.set(color);
+		temperature_slider.color.set(color);
+	}
 
-	brightness_slider.on("input:change", (color) => {
-		if (paired_device.device_id){
-			setBulbColor(color.rgb.r, color.rgb.g, color.rgb.b);
-		}
-	})
+	//
+
+	color_picker.on("color:change", updateColorHandler)
+	color_picker.on("input:change", setBulbColorFromHandler)
+
+	brightness_slider.on("color:change", updateColorHandler)
+	brightness_slider.on("input:change", setBulbColorFromHandler)
+
+	temperature_slider.on("color:change", updateColorHandler)
+	temperature_slider.on("input:change", setBulbColorFromHandler)
+
+	//
 
 	$(".color-presets > a").each(function(index){
 
@@ -670,9 +715,9 @@ function developerPanel(){
 			
 			let byteArray = getByteArrayFromDataview(value, "getUint8");
 
-			$("input.characteristic_value").val(byteArray.split(", "));
-
 			console.log("Value", value, byteArray);
+
+			$("input.characteristic_value").val(byteArray.join(", "));
 			
 		})
 

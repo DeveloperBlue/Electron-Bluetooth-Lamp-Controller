@@ -50,11 +50,15 @@ $(document).ready(function(){
 	
 	window.goToPage = goToPage;
     
-    $("a[page_trigger]").click(function(e){
+    $("a[page_trigger]").mousedown(function(e){
         e.preventDefault();
         
         let page_trigger = $(this).attr("page_trigger");
 		goToPage(page_trigger);
+		
+		if (e.which !== 3){
+			$(".sidebar").removeClass("open");
+		}
         
 			
     })

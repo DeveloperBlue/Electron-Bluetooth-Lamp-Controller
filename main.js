@@ -231,6 +231,8 @@ app.on("ready", function(){
 		*/
 	}
 
+	let first_record_timestamp;
+
 	ipcMain.on("data-recorder", (event, args) => {
 
 		if (typeof scanner_data[args.deviceId] == "undefined") {
@@ -245,6 +247,10 @@ app.on("ready", function(){
 			time : args.time,
 			data : args.data
 		});
+
+		if (typeof first_record_timestamp == "undefined"){
+			first_record_timestamp = new Date();
+		} 
 
 		console.log("Recorded Bluetooth Device Service Characteristics");
 	})
@@ -270,7 +276,7 @@ app.on("ready", function(){
 		console.log("Exporting recorded data . . .", scanner_data);
 		// fs.writeFileSync(path.join(__dirname, "/data_record.json"), JSON.stringify(scanner_data, null, "\t"), {flags: "w"});
 
-		fs.writeFileSync(path.join(__dirname, "/data_record.json"), prettyPrintArray(scanner_data), {flags: "w"});
+		fs.writeFileSync(path.join(__dirname, `/dev/data_record.json`), prettyPrintArray(scanner_data), {flags: "w"});
 
 		
 	})

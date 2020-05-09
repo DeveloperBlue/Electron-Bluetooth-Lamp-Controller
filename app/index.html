@@ -78,16 +78,20 @@
                 <!-- Start: Box -->
                 <div class="color-controller">
                     <!-- Start: Button Panel -->
-                    <div class="btn-group tab-buttons" role="group"><button class="btn btn-primary active" type="button">Color<i class="fas fa-sliders-h"></i></button><button class="btn btn-primary" type="button">Temperature<i class="fas fa-temperature-low"></i></button></div>
+                    <div class="btn-group tab-buttons" role="group"><button class="btn btn-primary active" type="button" panel="dynamic">Color<i class="fas fa-sliders-h"></i></button><button class="btn btn-primary" type="button" panel="temperature">Temperature<i class="fas fa-temperature-low"></i></button></div>
                     <!-- End: Button Panel -->
+                    <div class="power-button-aligner">
+                        <!-- Start: Power Button --><a class="power-button" href="#"><i class="fas fa-power-off"></i></a>
+                        <!-- End: Power Button -->
+                    </div>
                     <!-- Start: Panel Dynamic -->
-                    <div class="panel-layout" panel-type="dynamic"><a class="power-button" href="#"><i class="fas fa-power-off"></i></a>
+                    <div class="panel-layout active" panel-type="dynamic">
                         <!-- Start: Color Wheel -->
                         <div class="color-wheel disabled-ui"></div>
                         <!-- End: Color Wheel -->
-                        <!-- Start: RGB Presets -->
-                        <div class="color-presets"><a class="red" href="#"><span></span></a><a class="blue" href="#"><span></span></a><a class="green" href="#"><span></span></a><a class="yellow" href="#"><span></span></a><a class="white" href="#"><span></span></a></div>
-                        <!-- End: RGB Presets -->
+                        <!-- Start: Color Presets - RGB -->
+                        <div class="color-presets rgb-presets"><a class="red" href="#"><span></span></a><a class="green" href="#"><span></span></a><a class="blue" href="#"><span></span></a><a class="yellow" href="#"><span></span></a><a class="white" href="#"><span></span></a></div>
+                        <!-- End: Color Presets - RGB -->
                         <!-- Start: Brightness Slider -->
                         <div class="slider-container"><span><i class="far fa-moon"></i></span>
                             <div class="brightness-slider"></div><span><i class="fas fa-sun" style="font-size: 19px;"></i></span></div>
@@ -95,10 +99,16 @@
                     </div>
                     <!-- End: Panel Dynamic -->
                     <!-- Start: Panel Temperature -->
-                    <div class="panel-layout" panel-type="temperature" style="display : none;">
-                        <div class="color-presets"><a class="red" href="#"><span></span></a><a class="blue" href="#"><span></span></a><a class="green" href="#"><span></span></a><a class="yellow" href="#"><span></span></a><a class="white" href="#"><span></span></a></div>
-                        <div class="slider-container"><span><i class="fas fa-temperature-low"></i></span>
-                            <div class="brightness-slider"></div><span><i class="fas fa-temperature-high"></i></span></div>
+                    <div class="panel-layout" panel-type="temperature" style="display: none;">
+                        <!-- Start: Color Presets - Temperature -->
+                        <div class="color-presets temperature-presets"><a class="kelvin-1000" href="#"><span></span></a><a class="kelvin-2000" href="#"><span></span></a><a class="kelvin-3000" href="#"><span></span></a><a class="kelvin-4000" href="#"><span></span></a><a class="kelvin-5000" href="#"><span></span></a>
+                            <a
+                                class="kelvin-6000" href="#"><span></span></a><a class="kelvin-7000" href="#"><span></span></a><a class="kelvin-8000" href="#"><span></span></a><a class="kelvin-9000" href="#"><span></span></a><a class="kelvin-10000" href="#"><span></span></a></div>
+                        <!-- End: Color Presets - Temperature -->
+                        <!-- Start: Kelvin Slider -->
+                        <div class="temperature-slider-container"><span><i class="fas fa-temperature-low"></i></span>
+                            <div class="temperature-slider"></div><span><i class="fas fa-temperature-high"></i></span></div>
+                        <!-- End: Kelvin Slider -->
                     </div>
                     <!-- End: Panel Temperature -->
                 </div>
