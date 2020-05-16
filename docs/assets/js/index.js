@@ -485,6 +485,10 @@ function handleBluetoothScanner(){
 
 			// Use Chrome's bluetooth picker
 
+			requestDevicePair(DEFAULT_BULB_CONFIG.BULB_MAC_QUICK_ADDR);
+
+			/*
+
 			navigator.bluetooth.requestDevice({
 				acceptAllDevices : true,
 				optionalServices : ["generic_access", "battery_service", "device_information", DEFAULT_BULB_CONFIG.BULB_SERVICE_UUID]
@@ -499,6 +503,8 @@ function handleBluetoothScanner(){
 			})
 
 			$(".scanning-animation-div").fadeOut(100);
+
+			*/
 
 		}
 
@@ -707,6 +713,8 @@ function requestDevicePair(device_id){
 					*/
 	
 				})
+
+				console.log(paired_device);
 
 				getBulbColor(true);
 				getBulbPowerState(true);
