@@ -2,9 +2,11 @@
 
 [![Demo Video](https://img.youtube.com/vi/_7ogx-qlPFA/hqdefault.jpg)](https://youtu.be/_7ogx-qlPFA)
 
-Electron Bluetooth Lamp Controller is a simple crossplatform desktop and web application for controlling bluetooth lightbulbs and other generic bluetooth devices. [Download Latest Release Here](https://github.com/DeveloperBlue/Electron-Bluetooth-Lamp-Controller/releases)
+Electron Bluetooth Lamp Controller is a simple crossplatform desktop and web application for controlling bluetooth lightbulbs and other generic bluetooth devices.
 
-\*See **Devices** section
+You can [download the latest release of the desktop application from releases](https://github.com/DeveloperBlue/Electron-Bluetooth-Lamp-Controller/releases) or use the [web application](https://developerblue.github.io/Electron-Bluetooth-Lamp-Controller/). To build it yourself, see the **Build** section.
+
+\*See the **Devices** section for compatible devices.
 
 Device Pairing 				| Color & Brightness Control |  Temperature Control 	 | Generic Bluetooth Control
 :--------------------------:|:--------------------------:|:-------------------------:|:-------------------------:
