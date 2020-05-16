@@ -489,7 +489,8 @@ function handleBluetoothScanner(){
 				acceptAllDevices : true,
 				optionalServices : ["generic_access", "battery_service", "device_information", DEFAULT_BULB_CONFIG.BULB_SERVICE_UUID]
 			}).then(device => {
-				console.log("Bluetooth Discovery Callback");
+				console.log("Bluetooth Discovery Callback", device);
+				requestDevicePair(device.device_id);
 			}).catch(error => {
 				console.log(error);
 			}).finally(() => {
