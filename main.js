@@ -1,6 +1,7 @@
 const electron = require("electron")
 // Module to control application life.
 const app = electron.app
+const remote = electron.remote
 // Module to create native browser window.
 const BrowserWindow = electron.BrowserWindow
 
@@ -13,9 +14,28 @@ const fs = require("fs");
 const path = require("path")
 const url = require("url")
 
+// const webserver = require("./webserver.js");
+
+///////////////////////////////
+
+let isDev = (process.argv.indexOf("--dev") > -1);
+
+///////////////////////////////
+
 // Keep a global reference of the window object, if you don"t, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
+let devToolsWindow
+
+function createDeveloperConsole(){
+	devToolsWindow = new BrowserWindow({
+		x : 10,
+		y: 10
+	})
+
+	mainWindow.webContents.setDevToolsWebContents(devToolsWindow.webContents)
+	mainWindow.webContents.openDevTools({ mode: 'detach' })
+}
 
 function createWindow() {
 	// Create the browser window.
@@ -29,15 +49,11 @@ function createWindow() {
 
 	})
 
-	// required for Dev tools
-	devToolsWindow = new BrowserWindow({
-		x : 10,
-		y: 10
-	})
-
 	mainWindow.setMenu(null);
-	mainWindow.webContents.setDevToolsWebContents(devToolsWindow.webContents)
-	mainWindow.webContents.openDevTools({ mode: 'detach' })
+
+	if (isDev){
+		createDeveloperConsole();
+	}
 
 	//mainWindow.loadURL("http://google.com") and load the index.html of the app.
 	mainWindow.loadURL(url.format({
@@ -45,6 +61,11 @@ function createWindow() {
 		protocol: "file:",
 		slashes: true
 	}))
+
+	mainWindow.webContents.on('new-window', function(e, url) {
+		e.preventDefault();
+		shell.openExternal(url);
+	});
 
 
 	// Open the DevTools. mainWindow.webContents.openDevTools() Emitted when the
@@ -279,6 +300,11 @@ app.on("ready", function(){
 		fs.writeFileSync(path.join(__dirname, `/dev/data_record.json`), prettyPrintArray(scanner_data), {flags: "w"});
 
 		
+	})
+
+	ipcMain.on("open-client-console", (event, args) => {
+		console.log("Request to open client console");
+		createDeveloperConsole();
 	})
 
 

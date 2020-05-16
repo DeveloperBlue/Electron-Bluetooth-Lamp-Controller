@@ -16,4 +16,5 @@ window.addEventListener('DOMContentLoaded', () => {
 
 process.once('loaded', () => {
   global.ipcRenderer = electron.ipcRenderer;
+  global.openExternal = electron.shell.openExternal;
 });

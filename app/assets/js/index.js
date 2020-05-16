@@ -96,9 +96,19 @@ $(document).ready(() => {
 	Notification.stop();
 	goToPage("main");
 	handleBluetoothScanner();
+	handleExternalLinks();
 	developerPanel();
 
 })
+
+function handleExternalLinks(){
+	$(`a[target="_blank"]`).click(function(e){
+		e.preventDefault();
+		openExternal($(this).attr("href"));
+		return;
+	})
+}
+
 
 function prepareControlPanelSwapper(){
 
@@ -431,8 +441,24 @@ function handleBluetoothScanner(){
 				}).then(device => {
 					console.log("Bluetooth Discovery Callback");
 				}).catch(error => {
+
 					console.log(error);
+
+					if (error.message.indexOf("bluetooth adapter not available") > -1){
+						Notification.set("Failed to find bluetooth adapter", "no-adapter", 4);
+					} else if (error.message.indexOf("User cancelled") > -1){
+						Notification.set("Scan cancelled", "scan-cancelled", 3);
+					} else {
+						Notification.set(`An error has occured:\n${error.message}`,"scan-failure", 10);
+					}
+
+
 				}).finally(() => {
+
+					$(".scan-btn").text("Scan");
+					bluetooth_scanning_state = false;
+					$(this).removeAttr("disabled");
+
 					Notification.stop("scanning");
 					$(".scanning-animation-div").fadeOut(100);
 				})
@@ -831,6 +857,13 @@ function developerPanel(){
 	$("a.device_disconnect").click(function(e){
 		e.preventDefault();
 		paired_device.server.disconnect();
+	})
+
+	//
+
+	$("a.open_client_console").click(function(e){
+		e.preventDefault();
+		ipcRenderer.send("open-client-console");
 	})
 }
 

@@ -45,7 +45,7 @@
     <!-- Start: Page Container -->
     <div class="pages">
         <!-- Start: Page - Scanner -->
-        <div class="page device-scan" page="main" page_column_x="0">
+        <div class="page device-scan active" page="main" page_column_x="0">
             <!-- Start: Header -->
             <div class="header"><i class="fab fa-bluetooth-b"></i>
                 <h3 class="text-center text-white">Bluetooth Devices&nbsp;</h3><i class="fas fa-bars"></i></div>
@@ -69,7 +69,7 @@
         </div>
         <!-- End: Page - Scanner -->
         <!-- Start: Page - Controller -->
-        <div class="page active" page="controller" page_column_x="1">
+        <div class="page" page="controller" page_column_x="1">
             <!-- Start: Header -->
             <div class="header"><a href="#" page_trigger="main"><i class="fab fa-bluetooth"></i></a>
                 <h4 class="text-center text-white"></h4><i class="fas fa-bars"></i></div>
@@ -119,8 +119,8 @@
         <!-- Start: Page - Developer -->
         <div class="page" page="developer" page_column_x="2">
             <div class="container text-white device-developer">
-                <h4>Bluetooth Device Handler</h4><span class="device_name">Device Name :</span><span class="device_id">Device ID:</span><a class="record_data" href="#">Record Data</a><a class="export_data" href="#">Export Data</a><a class="re-pair_device"
-                    href="#">Re-pair to Device</a>
+                <h4>Bluetooth Device Handler</h4><span class="device_name">Device Name :</span><span class="device_id">Device ID:</span><a class="open_client_console" href="#">Open Client Console</a><a class="record_data" href="#">Record Data</a><a class="export_data"
+                    href="#">Export Data</a><a class="re-pair_device" href="#">Re-pair to Device</a>
                 <div class="characteristic-panel"><input type="text" class="characteristic_uuid" placeholder="UUID"><a class="characteristic_value_get" href="#">Get</a><input type="text" class="characteristic_value"><a class="characteristic_value_set" href="#">Set</a></div><a class="return_scanner"
                     href="#">Return to Scanner</a><a class="device_disconnect" href="#">Disconnect</a></div>
         </div>
@@ -135,7 +135,7 @@
     <script src="assets/js/iro.min.js"></script>
     <script src="assets/js/pagination.js"></script>
     <script src="assets/js/notification.js"></script>
-    <script src="http://localhost:3000/index.js"></script>
+    <script src="assets/js/index.js"></script>
 </body>
 
 </html>
