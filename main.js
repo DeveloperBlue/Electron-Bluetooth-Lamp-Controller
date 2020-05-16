@@ -57,7 +57,7 @@ function createWindow() {
 
 	//mainWindow.loadURL("http://google.com") and load the index.html of the app.
 	mainWindow.loadURL(url.format({
-		pathname: path.join(__dirname, "/app/index.html"),
+		pathname: path.join(__dirname, "/docs/index.html"),
 		protocol: "file:",
 		slashes: true
 	}))
